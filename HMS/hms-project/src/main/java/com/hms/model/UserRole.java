@@ -1,0 +1,5 @@
+package com.hms.model;
+
+public enum UserRole {
+    ADMIN, DOCTOR, RECEPTIONIST, LABORATORY_SPECIALIST, PHARMACIST, CASHIER, PATIENT
+}

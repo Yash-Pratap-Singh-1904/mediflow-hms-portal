@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediFlow HMS - Enterprise Master Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { 50: '#f0f9ff', 500: '#0284c7', 600: '#0369a1', 700: '#075985' } }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- 1. AUTHENTICATION / LOGIN OVERLAY -->
+  <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+      <div class="bg-brand-600 p-6 text-white text-center">
+        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-2xl font-bold">
+          <i class="fa-solid fa-hospital"></i>
+        </div>
+        <h2 class="text-xl font-bold">MediFlow HMS Portal</h2>
+        <p class="text-xs text-brand-100 mt-1">Role-Based Access Control System</p>
+      </div>
+
+      <div class="p-6">
+        <!-- Auth Tabs -->
+        <div class="flex border-b border-slate-200 mb-6">
+          <button onclick="toggleAuthTab('login')" id="tab-btn-login" class="flex-1 pb-3 text-xs font-bold border-b-2 border-brand-600 text-brand-600">Existing User Login</button>
+          <button onclick="toggleAuthTab('register')" id="tab-btn-register" class="flex-1 pb-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600">New Patient Registration</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Select Your Role</label>
+            <select id="login-role" class="w-full text-xs border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-500">
+              <option value="RECEPTIONIST">Receptionist</option>
+              <option value="DOCTOR">Doctor</option>
+              <option value="PHARMACIST">Pharmacist</option>
+              <option value="LABORATORY_SPECIALIST">Laboratory Specialist</option>
+              <option value="ADMIN">System Admin</option>
+              <option value="PATIENT">Patient</option>
+              <option value="CASHIER">Cashier</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Registered ID or User Name</label>
+            <input type="text" id="login-id" required placeholder="e.g. REC001, DOC001, PHM001, LAB001, ADM01, PAT001, CAS001" class="w-full text-xs border border-slate-300 rounded-lg p-2.5">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Enter Your Password</label>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full text-xs border border-slate-300 rounded-lg p-2.5">
+          </div>
+          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-3 rounded-lg transition-all shadow-md">Login to Portal</button>
+        </form>
+
+        <!-- New Patient Self-Registration Form -->
+        <form id="form-register" onsubmit="handlePatientSelfRegistration(event)" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Patient Name</label>
+            <input type="text" id="reg-name" required placeholder="Full Name" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Contact Phone</label>
+              <input type="text" id="reg-contact" required placeholder="555-0192" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Age</label>
+              <input type="number" id="reg-age" required placeholder="25" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Address</label>
+            <input type="text" id="reg-address" required placeholder="Street address" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Discount / Privilege Category</label>
+            <select id="reg-discount" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+              <option value="None">No Discount (0%)</option>
+              <option value="Student">Student (10%)</option>
+              <option value="Teacher">Teacher (15%)</option>
+              <option value="Senior Citizen">Senior Citizen (20%)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Create Your Password</label>
+            <input type="password" id="reg-password" required placeholder="••••••••" class="w-full text-xs border border-slate-300 rounded-lg p-2">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 rounded-lg transition-all shadow-md">Register Patient Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATIENT FULL APPOINTMENT & MEDICAL DETAILS MODAL (SECTIONS 8 - 14) -->
+  <div id="patient-appt-details-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-notes-medical text-brand-600 mr-2"></i>Complete Appointment Record</h3>
+        <button onclick="closeModal('patient-appt-details-modal')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Section 8: Appointment Details -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+        <h4 class="font-bold text-slate-800 uppercase border-b pb-1">Appointment Information</h4>
+        <div class="grid grid-cols-2 gap-2">
+          <p><strong>Appt ID:</strong> <span id="pv-appid" class="font-bold text-brand-600">—</span></p>
+          <p><strong>Status:</strong> <span id="pv-appstatus" class="font-bold">—</span></p>
+          <p><strong>Patient Name:</strong> <span id="pv-pname">—</span> (<span id="pv-pid">—</span>)</p>
+          <p><strong>Age / Contact:</strong> <span id="pv-page">—</span> / <span id="pv-pcontact">—</span></p>
+          <p><strong>Address:</strong> <span id="pv-paddress">—</span></p>
+          <p><strong>Discount Category:</strong> <span id="pv-pdiscount" class="font-bold bg-slate-200 px-1.5 py-0.5 rounded">—</span></p>
+          <p><strong>Doctor:</strong> <span id="pv-docname">—</span> (<span id="pv-docspec">—</span>)</p>
+          <p><strong>Date & Time:</strong> <span id="pv-datetime">—</span></p>
+        </div>
+        <p class="border-t pt-1"><strong>Reason for Visit:</strong> <span id="pv-reason" class="text-amber-800 font-medium">—</span></p>
+      </div>
+
+      <!-- Section 9: Prescription Details -->
+      <div id="pv-rx-box" class="space-y-2 bg-white p-3 rounded-xl border border-slate-200 text-xs hidden">
+        <h4 class="font-bold text-slate-800 uppercase border-b pb-1">Prescription Details</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left bg-slate-50 border rounded">
+            <thead class="bg-slate-100 font-bold border-b">
+              <tr><th class="p-2">Medicine Name</th><th class="p-2">Days</th><th class="p-2">Times / Day</th><th class="p-2 text-right">Price ($)</th></tr>
+            </thead>
+            <tbody id="pv-rx-items-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sections 10, 11, 12: Laboratory Details & Report -->
+      <div id="pv-lab-box" class="space-y-2 bg-amber-50/50 p-3 rounded-xl border border-amber-200 text-xs hidden">
+        <h4 class="font-bold text-amber-900 uppercase border-b pb-1"><i class="fa-solid fa-vials mr-1"></i>Laboratory Test Information</h4>
+        <div class="flex justify-between items-center text-slate-700">
+          <span>Test: <strong id="pv-lab-spec">—</strong> (<span id="pv-lab-dept">—</span>)</span>
+          <span>Price: <strong id="pv-lab-price" class="text-slate-900">$0.00</strong></span>
+        </div>
+        <p>Status: <strong id="pv-lab-status" class="text-brand-600">—</strong></p>
+        
+        <div id="pv-lab-report-section" class="pt-2 border-t hidden">
+          <p class="text-slate-800 bg-white p-2 rounded border mb-2"><strong>Specialist Remarks / Findings:</strong> <span id="pv-lab-remarks">—</span></p>
+          <a id="pv-lab-download-btn" href="#" download="#" target="_blank" class="inline-flex items-center bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">
+            <i class="fa-solid fa-download mr-1.5"></i>OPEN LAB REPORT (<span id="pv-lab-filename">file</span>)
+          </a>
+        </div>
+      </div>
+
+      <!-- Section 13: Billing & Payment Information -->
+      <div id="pv-bill-box" class="space-y-2 bg-emerald-50/50 p-3 rounded-xl border border-emerald-200 text-xs hidden">
+        <h4 class="font-bold text-emerald-900 uppercase border-b pb-1"><i class="fa-solid fa-receipt mr-1"></i>Final Invoice & Payment Statement</h4>
+        <div class="space-y-1 text-slate-700">
+          <div class="flex justify-between"><span>Total Medicine Amount:</span><strong id="pv-bill-med">$0.00</strong></div>
+          <div class="flex justify-between"><span>Total Laboratory Test Amount:</span><strong id="pv-bill-lab">$0.00</strong></div>
+          <div class="flex justify-between font-bold border-t pt-1"><span>Subtotal:</span><span id="pv-bill-subtotal">$0.00</span></div>
+          <div class="flex justify-between text-amber-700"><span>Privilege Discount Granted:</span><strong id="pv-bill-discount">-$0.00</strong></div>
+          <div class="flex justify-between border-t pt-1 text-sm font-bold text-emerald-700"><span>Final Bill Amount:</span><span id="pv-bill-final">$0.00</span></div>
+          <div class="flex justify-between border-t pt-2 text-slate-600">
+            <span>Payment Mode: <strong id="pv-bill-method" class="text-slate-900">—</strong></span>
+            <span>Payment Status: <strong class="text-emerald-600">Paid</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 14: Patient-side Close Appointment -->
+      <div id="pv-close-appt-wrapper" class="pt-2">
+        <!-- 
+        <button type="button" onclick="closePatientAppointmentView()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-lg shadow-md transition-all">
+          <i class="fa-solid fa-circle-check mr-1.5"></i>CLOSE APPOINTMENT
+        </button>
+         -->
+      </div>
+    </div>
+  </div>
+
+  <!-- OTHER SYSTEM MODALS -->
+  <div id="cashier-billing-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-file-invoice-dollar text-brand-600 mr-2"></i>Cashier Settlement & Invoice Summary</h3>
+        <button onclick="closeModal('cashier-billing-modal')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleConfirmCashierPayment(event)" class="space-y-4">
+        <input type="hidden" id="modal-cash-rxid"><input type="hidden" id="modal-cash-pid">
+        <div class="bg-slate-50 p-3 rounded-xl border text-xs grid grid-cols-2 gap-2">
+          <p><strong>Patient Name:</strong> <span id="modal-cash-pname">—</span></p>
+          <p><strong>Patient ID:</strong> <span id="modal-cash-pid-text" class="font-bold text-brand-600">—</span></p>
+          <p><strong>Age / Contact:</strong> <span id="modal-cash-page">—</span> / <span id="modal-cash-pcontact">—</span></p>
+          <p><strong>Discount Category:</strong> <span id="modal-cash-pdiscount" class="font-bold bg-slate-200 px-1.5 py-0.5 rounded">—</span></p>
+          <p class="col-span-2 border-t pt-1 text-slate-600"><strong>Prescribing Doctor:</strong> <span id="modal-cash-doc">—</span> | <strong>Reason:</strong> <span id="modal-cash-reason">—</span></p>
+        </div>
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase text-slate-700">Prescribed Medicine Details (Pharmacist Priced)</h4>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs bg-white border rounded-lg"><thead class="bg-slate-100 font-bold border-b"><tr><th class="p-2">Medicine Name</th><th class="p-2">Days</th><th class="p-2">Times / Day</th><th class="p-2 text-right">Price ($)</th></tr></thead><tbody id="modal-cash-med-rows" class="divide-y divide-slate-100"></tbody></table></div>
+        </div>
+        <div id="modal-cash-lab-info" class="bg-amber-50/60 p-3 rounded-xl border border-amber-200 text-xs space-y-1 hidden">
+          <p class="font-bold text-amber-900"><i class="fa-solid fa-vials mr-1"></i>Laboratory Test Charge (Doctor Priced)</p>
+          <div class="flex justify-between text-amber-800"><span id="modal-cash-lab-type">Test Type: —</span><span id="modal-cash-lab-price" class="font-bold">Test Price: $0.00</span></div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+          <h4 class="font-bold uppercase text-slate-700 border-b pb-1">Automated Bill Calculation</h4>
+          <div class="flex justify-between"><span>Total Medicine Amount:</span><strong id="calc-med-total" class="text-slate-800">$0.00</strong></div>
+          <div class="flex justify-between"><span>Total Laboratory Test Amount:</span><strong id="calc-lab-total" class="text-slate-800">$0.00</strong></div>
+          <div class="flex justify-between border-t pt-1 font-bold text-slate-900"><span>Subtotal:</span><span id="calc-subtotal">$0.00</span></div>
+          <div class="flex justify-between text-amber-700"><span>Privilege Discount (<span id="calc-discount-cat">None</span> - <span id="calc-discount-rate">0%</span>):</span><strong id="calc-discount-amt">-$0.00</strong></div>
+          <div class="flex justify-between border-t pt-2 text-base font-bold text-emerald-600"><span>Final Bill Amount:</span><span id="calc-final-total">$0.00</span></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+          <label class="block text-xs font-bold text-slate-800">Select Payment Method</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center space-x-2 border p-2.5 rounded-lg cursor-pointer hover:bg-slate-50"><input type="radio" name="cashier-pay-method" value="Cash" checked class="text-brand-600"><span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-money-bill-wave text-emerald-600 mr-1"></i>Cash</span></label>
+            <label class="flex items-center space-x-2 border p-2.5 rounded-lg cursor-pointer hover:bg-slate-50"><input type="radio" name="cashier-pay-method" value="Online" class="text-brand-600"><span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-globe text-brand-600 mr-1"></i>Online</span></label>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 rounded-lg shadow-md transition-all"><i class="fa-solid fa-check-circle mr-1"></i>Payment Done</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="pharmacy-pricing-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-pills text-brand-600 mr-2"></i>Pharmacy Pricing & Processing Console</h3>
+        <button onclick="closeModal('pharmacy-pricing-modal')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleSavePharmacyPricing(event)" class="space-y-4">
+        <input type="hidden" id="modal-ph-rxid">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs grid grid-cols-2 gap-2">
+          <p><strong>Patient Name:</strong> <span id="modal-ph-pname">—</span></p>
+          <p><strong>Patient ID:</strong> <span id="modal-ph-pid" class="font-bold text-brand-600">—</span></p>
+          <p><strong>Age / Contact:</strong> <span id="modal-ph-page">—</span> / <span id="modal-ph-pcontact">—</span></p>
+          <p><strong>Privilege Category:</strong> <span id="modal-ph-pdiscount" class="font-bold bg-slate-200 px-1.5 py-0.5 rounded">—</span></p>
+          <p class="col-span-2 border-t pt-1 text-slate-600"><strong>Prescribing Doctor:</strong> <span id="modal-ph-doc">—</span> | <strong>Reason:</strong> <span id="modal-ph-reason">—</span></p>
+        </div>
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase text-slate-700">7.5 Prescribed Medicines (Set Unit Prices)</h4>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs bg-white border rounded-lg"><thead class="bg-slate-100 font-bold border-b"><tr><th class="p-2">Medicine Name (Doctor)</th><th class="p-2">Days</th><th class="p-2">Times / Day</th><th class="p-2 w-36">Medicine Price ($) (Pharmacist)</th></tr></thead><tbody id="modal-ph-med-rows" class="divide-y divide-slate-100"></tbody></table></div>
+        </div>
+        <div id="modal-ph-lab-info" class="bg-amber-50/60 p-3 rounded-xl border border-amber-200 text-xs space-y-1 hidden"><p class="font-bold text-amber-900"><i class="fa-solid fa-vials mr-1"></i>Associated Laboratory Test (Read-Only Information)</p><div class="flex justify-between text-amber-800"><span id="modal-ph-lab-type">Test: —</span><span id="modal-ph-lab-price" class="font-bold">Test Price (Set by Doctor): $0.00</span></div></div>
+        <div class="flex space-x-3 pt-2"><button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 rounded-lg shadow-md transition-all">Complete Pharmacy Processing & Send to Cashier</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="lab-upload-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-file-medical text-brand-600 mr-2"></i>Upload Diagnostic Report</h3><button onclick="closeModal('lab-upload-modal')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button></div>
+      <form onsubmit="handleLabReportSubmission(event)" class="space-y-4">
+        <input type="hidden" id="modal-lab-id">
+        <div class="bg-slate-50 p-3 rounded-lg text-xs space-y-1 border"><p><strong>Report Reference:</strong> <span id="modal-lab-ref" class="text-brand-600 font-bold">—</span></p><p><strong>Patient ID:</strong> <span id="modal-lab-pid">—</span></p><p><strong>Test Type:</strong> <span id="modal-lab-spec" class="font-bold text-slate-800">—</span></p></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Diagnostic File (Image/PDF)</label><input type="file" id="modal-lab-file" accept="image/*,.pdf" class="w-full text-xs border p-2 rounded-lg bg-slate-50"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Clinical Remarks</label><textarea id="modal-lab-remarks" required rows="4" placeholder="Enter findings..." class="w-full text-xs p-2.5 border rounded-lg focus:ring-2 focus:ring-brand-500"></textarea></div>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-lg shadow-md transition-all">Submit Report</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="first-login-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100 space-y-4">
+      <div class="text-center"><div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold"><i class="fa-solid fa-key"></i></div><h3 class="text-lg font-bold text-slate-900">First Login Password Reset</h3><p class="text-xs text-slate-500">You must set a new permanent password before proceeding.</p></div>
+      <form onsubmit="handleFirstLoginPasswordChange(event)" class="space-y-3">
+        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Temporary Password</label><input type="password" id="pass-temp-current" required class="w-full text-xs p-2 border rounded-lg"></div>
+        <div><label class="block text-xs font-semibold text-slate-700 mb-1">New Permanent Password</label><input type="password" id="pass-new" required placeholder="••••••••" class="w-full text-xs p-2 border rounded-lg"></div>
+        <div><label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password</label><input type="password" id="pass-confirm" required placeholder="••••••••" class="w-full text-xs p-2 border rounded-lg"></div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg">Save Password & Continue</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="new-patient-credentials-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-100 space-y-4">
+      <div class="text-center"><div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold"><i class="fa-solid fa-user-check"></i></div><h3 class="text-lg font-bold text-slate-900">Patient Registered Successfully!</h3><p class="text-xs text-slate-500">Provide these credentials to the patient. They must update their password on first login.</p></div>
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 font-mono"><div class="flex justify-between"><span>Patient ID:</span><strong id="display-gen-pid" class="text-brand-600">PAT000</strong></div><div class="flex justify-between"><span>Temporary Password:</span><strong id="display-gen-pass" class="text-emerald-600">Temp@0000</strong></div></div>
+      <button onclick="closeCredentialsModalAndContinue()" class="w-full bg-slate-900 text-white text-xs font-bold py-2.5 rounded-lg">Continue to Appointment Booking</button>
+    </div>
+  </div>
+
+  <div id="patient-view-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3"><h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-address-card text-brand-600 mr-2"></i>Patient Details</h3><button onclick="closeModal('patient-view-modal')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2"><div class="grid grid-cols-2 gap-2 border-b pb-2"><p><strong>Patient Name:</strong> <span id="v-p-name">—</span></p><p><strong>Patient ID:</strong> <span id="v-p-id" class="text-brand-600 font-bold">—</span></p><p><strong>Age:</strong> <span id="v-p-age">—</span></p><p><strong>Contact Number:</strong> <span id="v-p-contact">—</span></p></div><p><strong>Address:</strong> <span id="v-p-address">—</span></p><p><strong>Discount Category:</strong> <span id="v-p-discount" class="px-2 py-0.5 rounded bg-slate-200 font-bold">—</span></p><div class="border-t pt-2 mt-2"><p><strong>Reason for Visit:</strong> <span id="v-p-reason" class="text-amber-700 font-medium">—</span></p><p><strong>Appointment Date & Time:</strong> <span id="v-p-datetime">—</span></p><p><strong>Doctor:</strong> <span id="v-p-doc">—</span> (<span id="v-p-spec">—</span>)</p><p><strong>Appointment Status:</strong> <span id="v-p-status" class="font-bold text-brand-600">—</span></p></div></div>
+      <button onclick="closeModal('patient-view-modal')" class="w-full bg-slate-900 text-white text-xs font-bold py-2 rounded-lg">Close Details</button>
+    </div>
+  </div>
+
+  <!-- APPLICATION HEADER NAVBAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-square-h"></i></div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">MediFlow Enterprise HMS</h1>
+          <p class="text-[10px] text-slate-500 font-medium" id="active-session-label">Session: Unauthenticated</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <span id="active-user-badge" class="px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs font-bold text-slate-700">Role: Guest</span>
+        <button onclick="logout()" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200"><i class="fa-solid fa-right-from-bracket mr-1"></i>Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD WORKSPACE -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+    <main>
+
+      <!-- ================= 8. CASHIER PORTAL ================= -->
+      <section id="portal-CASHIER" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-file-invoice-dollar text-brand-600 mr-2"></i>Cashier Billing Desk</h2>
+              <p class="text-xs text-slate-500">Process final patient invoices with automatic privilege discounts and compute payments.</p>
+            </div>
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-bold border border-emerald-200"><i class="fa-solid fa-shield-halved mr-1"></i>Financial Settlement Desk</span>
+          </div>
+
+          <div class="flex border-b border-slate-200">
+            <button onclick="switchCashierTab('pending')" id="btn-cash-pending" class="pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600 mr-6">Pending Billing Queue</button>
+            <button onclick="switchCashierTab('history')" id="btn-cash-history" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400">Payment History / Completed Transactions</button>
+          </div>
+
+          <div id="cashier-pane-pending" class="space-y-3 text-xs"><div id="cashier-bills-list" class="space-y-3"></div></div>
+          <div id="cashier-pane-history" class="space-y-3 text-xs hidden"><div id="cashier-history-list" class="space-y-3"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= 4. RECEPTIONIST PORTAL ================= -->
+      <section id="portal-RECEPTIONIST" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-brand-600 mr-2"></i>Reception Desk Portal</h2>
+              <p class="text-xs text-slate-500">Schedule appointments for patients and resolve administrative queries.</p>
+            </div>
+            <span class="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-full font-bold border border-brand-200">Administrative Scope</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+              <div class="flex space-x-2 border-b border-slate-200 pb-3">
+                <button onclick="switchReceptionTab('old')" id="btn-tab-old" class="px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm">Old Patient</button>
+                <button onclick="switchReceptionTab('new')" id="btn-tab-new" class="px-4 py-2 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-100">New Patient</button>
+              </div>
+
+              <div id="reception-workflow-old" class="space-y-4">
+                <div class="flex space-x-2">
+                  <input type="text" id="rec-search-query" placeholder="Enter Patient ID (e.g. PAT001) or Registered Phone Number" class="flex-1 text-xs p-2.5 border rounded-lg focus:ring-2 focus:ring-brand-500">
+                  <button onclick="searchExistingPatient()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 rounded-lg transition-all">Search</button>
+                </div>
+
+                <div id="patient-details-card" class="hidden bg-white p-3 rounded-lg border border-slate-200 text-xs space-y-1">
+                  <p class="font-bold text-slate-900" id="card-p-name">Name: —</p>
+                  <div class="grid grid-cols-2 text-slate-500"><span id="card-p-id">ID: —</span><span id="card-p-contact">Contact: —</span><span id="card-p-age">Age: —</span><span id="card-p-address">Address: —</span></div>
+                </div>
+
+                <form onsubmit="handleBookOldPatientAppt(event)" class="space-y-3 pt-1">
+                  <input type="hidden" id="selected-patient-id">
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Discount Category</label>
+                    <select id="appt-discount" class="w-full text-xs p-2 border rounded-lg">
+                      <option value="None">No Discount (0%)</option>
+                      <option value="Student">Student (10%)</option>
+                      <option value="Teacher">Teacher (15%)</option>
+                      <option value="Senior Citizen">Senior Citizen (20%)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Doctor Selection</label>
+                    <select id="appt-doctor-id" onchange="updateDoctorAvailabilityDisplay(this.value)" required class="w-full text-xs p-2 border rounded-lg"></select>
+                  </div>
+                  <div id="doc-avail-badge" class="bg-blue-50 border border-brand-200 text-brand-700 p-2 rounded-lg text-[11px] font-medium hidden">
+                    <i class="fa-solid fa-clock mr-1"></i>Doctor Availability: <span id="doc-avail-text" class="font-bold"></span>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Reason for Visit</label>
+                    <input type="text" id="appt-reason" required placeholder="Reason for Visit" class="w-full text-xs p-2.5 border rounded-lg">
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div><input type="date" id="appt-date" required class="w-full text-xs p-2.5 border rounded-lg"></div>
+                    <div><input type="time" id="appt-time" required class="w-full text-xs p-2.5 border rounded-lg"></div>
+                  </div>
+                  <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-3 rounded-lg shadow-md transition-all">Confirm Appointment</button>
+                </form>
+              </div>
+
+              <form id="reception-workflow-new" onsubmit="handleReceptionNewPatientRegister(event)" class="space-y-3 hidden">
+                <h3 class="text-xs font-bold uppercase text-slate-800">Register New Patient Entry</h3>
+                <div><label class="block text-xs font-semibold text-slate-700 mb-1">Patient Name</label><input type="text" id="new-p-name" required placeholder="Full Name" class="w-full text-xs p-2 border rounded-lg"></div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div><label class="block text-xs font-semibold text-slate-700 mb-1">Contact Phone</label><input type="text" id="new-p-contact" required placeholder="Contact Number" class="w-full text-xs p-2 border rounded-lg"></div>
+                  <div><label class="block text-xs font-semibold text-slate-700 mb-1">Age</label><input type="number" id="new-p-age" required placeholder="Age" class="w-full text-xs p-2 border rounded-lg"></div>
+                </div>
+                <div><label class="block text-xs font-semibold text-slate-700 mb-1">Address</label><input type="text" id="new-p-address" required placeholder="Address" class="w-full text-xs p-2 border rounded-lg"></div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg">Register Patient & Generate Credentials</button>
+              </form>
+            </div>
+
+            <div class="lg:col-span-5 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+              <h3 class="text-xs font-bold uppercase text-slate-800 tracking-wider">PATIENT QUERIES</h3>
+              <div class="flex border-b border-slate-200">
+                <button onclick="switchQueryTab('pending')" id="btn-q-pending" class="pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600 mr-4">Pending Queries</button>
+                <button onclick="switchQueryTab('resolved')" id="btn-q-resolved" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400">Resolved Queries/History</button>
+              </div>
+              <div id="query-list-pending" class="space-y-2 text-xs max-h-[380px] overflow-y-auto"></div>
+              <div id="query-list-resolved" class="space-y-2 text-xs max-h-[380px] overflow-y-auto hidden"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. DOCTOR PORTAL ================= -->
+      <section id="portal-DOCTOR" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-user-doctor text-brand-600 mr-2"></i>Doctor Console</h2>
+              <p class="text-xs text-slate-500">Examine assigned patients, create central prescriptions, order lab diagnostics, and close appointments.</p>
+            </div>
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-bold border border-emerald-200">Assigned Patients Only</span>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">MY ASSIGNED APPOINTMENTS</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600 border border-slate-200 rounded-lg">
+                <thead class="bg-slate-100 uppercase text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2.5">Appt ID</th><th class="p-2.5">Patient Name</th><th class="p-2.5">Age</th><th class="p-2.5">Problem / Reason</th><th class="p-2.5">Appointment Date</th><th class="p-2.5">Appointment Time</th><th class="p-2.5">Status</th><th class="p-2.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="table-doctor-appointments" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="doctor-consultation-panel" class="hidden bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h3 class="text-xs font-bold uppercase text-slate-800">Diagnose & Create Central Prescription</h3>
+              <span id="active-consultation-badge" class="text-xs font-bold text-brand-600">Appt: —</span>
+            </div>
+
+            <form onsubmit="handleDoctorSubmitConsultation(event)" class="space-y-4">
+              <input type="hidden" id="doc-active-appid"><input type="hidden" id="doc-active-pid">
+
+              <div class="space-y-2">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs bg-white border rounded-lg">
+                    <thead class="bg-slate-100 font-bold border-b">
+                      <tr><th class="p-2">Medicine Name</th><th class="p-2 w-24">Days</th><th class="p-2 w-28">Times / Day</th><th class="p-2 w-36">Medicine Price</th><th class="p-2 text-center w-12">Action</th></tr>
+                    </thead>
+                    <tbody id="medicine-table-body" class="divide-y divide-slate-100"></tbody>
+                  </table>
+                </div>
+                <button type="button" onclick="addMedicineRow()" class="bg-brand-600 text-white text-[11px] font-bold px-3 py-1.5 rounded hover:bg-brand-700"><i class="fa-solid fa-plus mr-1"></i>Add Medicine</button>
+              </div>
+
+              <div class="bg-white p-4 rounded-lg border border-slate-200 space-y-3">
+                <label class="block text-xs font-bold text-slate-800">Does the patient require a laboratory test?</label>
+                <div class="flex space-x-4 text-xs font-bold">
+                  <label class="flex items-center space-x-1.5 cursor-pointer"><input type="radio" name="lab-required" value="NO" checked onchange="toggleDoctorLabSection(false)" class="text-brand-600"><span>No</span></label>
+                  <label class="flex items-center space-x-1.5 cursor-pointer"><input type="radio" name="lab-required" value="YES" onchange="toggleDoctorLabSection(true)" class="text-brand-600"><span>Yes</span></label>
+                </div>
+
+                <div id="doctor-lab-request-fields" class="hidden pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Laboratory Category & Specialization</label>
+                    <select id="doc-lab-spec" onchange="updateMatchingLabSpecialists(this.value)" class="w-full text-xs p-2 border rounded-lg">
+                      <option value="PATHOLOGY|Pathology|Blood and Tissue Tests">Pathology Specialist – Blood and Tissue Tests</option>
+                      <option value="RADIOLOGY|Radiology|X-Ray">Radiology Specialist – X-ray</option>
+                      <option value="NEURORADIOLOGY|Neuroradiology|MRI">Neuroradiologist – MRI</option>
+                      <option value="INTERVENTIONAL_RADIOLOGY|Interventional Radiology|CT Scan or Ultrasound">Interventional Radiologist – CT Scan or Ultrasound</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Assigned Specialist</label>
+                    <select id="doc-lab-assigned-spec" class="w-full text-xs p-2 border rounded-lg bg-slate-50"></select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Laboratory Test Price ($) (Set by Doctor)</label>
+                    <input type="number" step="0.01" id="doc-lab-price" placeholder="Test price e.g. 150.00" class="w-full text-xs p-2 border rounded-lg">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex space-x-3 pt-1">
+                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-md">Submit Central Prescription</button>
+                <button type="button" onclick="closeDoctorAppointment()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg shadow-md">Close Appointment</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="space-y-3"><h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Completed Appointment / Appointment History</h3><div id="doctor-history-list" class="space-y-2 text-xs"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= 7. PHARMACIST PORTAL ================= -->
+      <section id="portal-PHARMACIST" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-pills text-brand-600 mr-2"></i>Pharmacy Fulfillment Portal</h2>
+              <p class="text-xs text-slate-500">Fill pricing for prescribed medicines in central records and forward to Cashier desk.</p>
+            </div>
+            <span class="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-full font-bold border border-brand-200">Central RX Architecture</span>
+          </div>
+
+          <div class="flex border-b border-slate-200">
+            <button onclick="switchPharmacyTab('pending')" id="btn-ph-pending" class="pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600 mr-6">Pending Prescriptions</button>
+            <button onclick="switchPharmacyTab('processed')" id="btn-ph-processed" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400">Processed Prescription History</button>
+          </div>
+
+          <div id="pharmacy-pane-pending" class="space-y-3 text-xs"><div id="pharmacy-rx-list" class="space-y-3"></div></div>
+          <div id="pharmacy-pane-processed" class="space-y-3 text-xs hidden"><div id="pharmacy-history-list" class="space-y-3"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= 6. LABORATORY SPECIALIST PORTAL ================= -->
+      <section id="portal-LABORATORY_SPECIALIST" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-vials text-brand-600 mr-2"></i>Diagnostics Lab Terminal</h2>
+              <p class="text-xs text-slate-500" id="lab-spec-scope-label">Inspect specialized diagnostic orders and submit clinical report outcomes.</p>
+            </div>
+            <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-bold border border-indigo-200">Department Strict Scope</span>
+          </div>
+
+          <div id="lab-reports-list" class="space-y-3 text-xs"></div>
+        </div>
+      </section>
+
+      <!-- ================= 3. ADMIN PORTAL ================= -->
+      <section id="portal-ADMIN" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-user-shield text-brand-600 mr-2"></i>Admin Management Dashboard</h2>
+            <p class="text-xs text-slate-500">Overall management of hospital staff, patient directory, statistics, and business revenue.</p>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Registered Patients</p><p id="stat-total-patients" class="text-2xl font-bold">0</p></div>
+            <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Appointments</p><p id="stat-total-appointments" class="text-2xl font-bold">0</p></div>
+            <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] font-bold text-slate-400 uppercase">Diagnosed Patients</p><p id="stat-diagnosed" class="text-2xl font-bold text-emerald-600">0</p></div>
+            <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Business Revenue</p><p id="stat-revenue" class="text-2xl font-bold text-brand-600">$0.00</p></div>
+          </div>
+
+          <form onsubmit="handleAdminAddStaff(event)" class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-3"><h3 class="text-xs font-bold text-slate-800 uppercase">Appoint Hospital Staff Member</h3></div>
+            <input type="text" id="staff-name" placeholder="Staff Name" required class="text-xs p-2 border rounded-lg">
+            <input type="text" id="staff-contact" placeholder="Contact Phone" required class="text-xs p-2 border rounded-lg">
+            <input type="number" id="staff-age" placeholder="Age" required class="text-xs p-2 border rounded-lg">
+            <select id="staff-role" onchange="handleRoleSelectionChange(this.value)" class="text-xs p-2 border rounded-lg">
+              <option value="DOCTOR">Doctor</option>
+              <option value="LABORATORY_SPECIALIST">Laboratory Specialist</option>
+              <option value="RECEPTIONIST">Receptionist</option>
+              <option value="PHARMACIST">Pharmacist</option>
+              <option value="CASHIER">Cashier</option>
+            </select>
+            <input type="text" id="staff-hours" placeholder="Working Hours" required class="text-xs p-2 border rounded-lg">
+            <input type="password" id="staff-password" placeholder="Login Password" required class="text-xs p-2 border rounded-lg">
+
+            <div id="wrapper-doc-spec" class="md:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Doctor Specialization</label>
+              <select id="staff-doc-spec" class="text-xs p-2 border rounded-lg w-full">
+                <option value="General Practitioner">General Practitioner / Family Doctor</option>
+                <option value="Pediatrician">Pediatrician</option>
+                <option value="Cardiologist">Cardiologist</option>
+                <option value="Dermatologist">Dermatologist</option>
+                <option value="Neurologist">Neurologist</option>
+                <option value="Orthopedist">Orthopedist</option>
+                <option value="Gynecologist">Gynecologist</option>
+              </select>
+            </div>
+
+            <div id="wrapper-lab-spec" class="md:col-span-3 hidden">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Laboratory Specialization & Department</label>
+              <select id="staff-lab-spec" class="text-xs p-2 border rounded-lg w-full">
+                <option value="PATHOLOGY|Pathology|Blood and Tissue Tests">Pathology Specialist — Blood and Tissue Tests</option>
+                <option value="RADIOLOGY|Radiology|X-Ray">Radiology Specialist — X-Ray</option>
+                <option value="NEURORADIOLOGY|Neuroradiology|MRI">Neuroradiologist — MRI</option>
+                <option value="INTERVENTIONAL_RADIOLOGY|Interventional Radiology|CT Scan or Ultrasound">Interventional Radiologist — CT Scan or Ultrasound</option>
+              </select>
+            </div>
+
+            <button type="submit" class="md:col-span-3 bg-slate-900 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-slate-800">Appoint Staff Member</button>
+          </form>
+
+          <div class="space-y-3"><h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">3.1 Active Hospital Staff Directory</h3><div class="overflow-x-auto"><table class="w-full text-left text-xs border rounded-lg"><tbody id="table-admin-staff"></tbody></table></div></div>
+          <div class="space-y-3"><h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">3.2 Registered Patient Directory</h3><div class="overflow-x-auto"><table class="w-full text-left text-xs border rounded-lg"><tbody id="table-admin-patients"></tbody></table></div></div>
+        </div>
+      </section>
+
+      <!-- ================= 9. PATIENT PORTAL ================= -->
+      <section id="portal-PATIENT" class="portal-pane hidden space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-hospital-user text-brand-600 mr-2"></i>Patient Personal Portal</h2>
+              <p class="text-xs text-slate-500">Secure personal dashboard for self-service appointments, prescriptions, diagnostic reports, and settlement bills.</p>
+            </div>
+            <span class="text-xs bg-brand-50 text-brand-700 px-3 py-1 rounded-full font-bold border border-brand-200"><i class="fa-solid fa-user-lock mr-1"></i>Authenticated Patient Isolation</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Panel: Self-Service Appointment Booking Form (Sections 2 - 6) -->
+            <div class="lg:col-span-6 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+              <h3 class="text-xs font-bold uppercase text-slate-800 tracking-wider"><i class="fa-solid fa-calendar-plus text-brand-600 mr-1.5"></i>2. Book Appointment</h3>
+
+              <!-- Section 3: Automatically Fetched Patient Info -->
+              <div class="bg-white p-3 rounded-lg border border-slate-200 text-xs space-y-1">
+                <p class="font-bold text-slate-900" id="pat-self-pname">Name: —</p>
+                <div class="grid grid-cols-2 text-slate-500">
+                  <span id="pat-self-pid">ID: —</span><span id="pat-self-pcontact">Contact: —</span>
+                </div>
+                <p class="text-slate-500" id="pat-self-paddress">Address: —</p>
+              </div>
+
+              <!-- Section 4: Patient Entered Appointment Details -->
+              <form onsubmit="handlePatientSelfBookAppt(event)" class="space-y-3">
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Discount / Privilege Category</label>
+                  <select id="pat-appt-discount" class="w-full text-xs p-2 border rounded-lg">
+                    <option value="None">No Discount (0%)</option>
+                    <option value="Student">Student (10%)</option>
+                    <option value="Teacher">Teacher (15%)</option>
+                    <option value="Senior Citizen">Senior Citizen (20%)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Doctor Selection</label>
+                  <select id="pat-appt-doctor-id" onchange="updatePatientDoctorAvailabilityDisplay(this.value)" required class="w-full text-xs p-2 border rounded-lg"></select>
+                </div>
+
+                <div id="pat-doc-avail-badge" class="bg-blue-50 border border-brand-200 text-brand-700 p-2 rounded-lg text-[11px] font-medium hidden">
+                  <i class="fa-solid fa-clock mr-1"></i>Doctor Availability: <span id="pat-doc-avail-text" class="font-bold"></span>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Problem / Reason for Visit</label>
+                  <input type="text" id="pat-appt-reason" required placeholder="Type your symptoms or reason for visit..." class="w-full text-xs p-2.5 border rounded-lg">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Appointment Date</label>
+                    <input type="date" id="pat-appt-date" required class="w-full text-xs p-2.5 border rounded-lg">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Appointment Time</label>
+                    <input type="time" id="pat-appt-time" required class="w-full text-xs p-2.5 border rounded-lg">
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-3 rounded-lg shadow-md transition-all">
+                  <i class="fa-solid fa-calendar-check mr-1"></i>5. Book Appointment / Confirm
+                </button>
+              </form>
+            </div>
+
+            <!-- Right Panel: Submit Query to Receptionist (Section 16) -->
+            <div class="lg:col-span-6 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+              <h3 class="text-xs font-bold uppercase text-slate-800 tracking-wider"><i class="fa-solid fa-paper-plane text-brand-600 mr-1.5"></i>16. Submit Query to Receptionist</h3>
+              <form onsubmit="handlePatientQuerySubmit(event)" class="space-y-3">
+                <textarea id="patient-query-text" required placeholder="Type your administrative question regarding timing, scheduling, or hospital services..." class="w-full text-xs p-2.5 border rounded-lg h-28 focus:ring-2 focus:ring-brand-500"></textarea>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-lg shadow-md transition-all">Submit Query</button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- Section Grid: Records & History (Sections 7, 15) -->
+          <div class="mt-8 space-y-6 border-t pt-6">
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-calendar-days text-brand-600 mr-1"></i>7. My Appointments</h3>
+              <div id="patient-appts-list" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-comments text-brand-600 mr-1"></i>15. My Queries & Replies</h3>
+              <div id="patient-queries-history" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-prescription text-brand-600 mr-1"></i>My Prescriptions</h3>
+              <div id="patient-rx-list" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-vials text-brand-600 mr-1"></i>11. My Laboratory Reports & Uploaded Files</h3>
+              <div id="patient-labs-list" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2"><i class="fa-solid fa-file-invoice-dollar text-brand-600 mr-1"></i>13. My Final Bills & Payment Statements</h3>
+              <div id="patient-bills-list" class="space-y-2 text-xs"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Central Data Repository
+    const defaultState = {
+      currentUser: null,
+      users: [
+        { id: 'ADM01', name: 'System Admin', role: 'ADMIN', password: 'admin123' },
+        { id: 'PAT001', name: 'Yash Pratap Singh', role: 'PATIENT', password: 'pass123', firstLogin: false, contact: '555-0192', age: 21, address: '123 Tech Lane', discount: 'Student', regDate: '2026-07-27', status: 'Active' },
+        { id: 'PAT002', name: 'Patient B', role: 'PATIENT', password: 'pass123', firstLogin: false, contact: '555-0193', age: 45, address: '456 Oak St', discount: 'Teacher', regDate: '2026-07-27', status: 'Active' },
+        { id: 'DOC001', name: 'Dr. P1', role: 'DOCTOR', password: 'doc123', contact: '555-0111', age: 45, specialization: 'Cardiologist', department: 'Cardiology', hours: '09:00 AM - 02:00 PM', status: 'Active' },
+        { id: 'LAB001', name: 'Diana Prince (X-Ray)', role: 'LABORATORY_SPECIALIST', password: 'lab123', contact: '555-0201', age: 35, specialization: 'X-Ray', department: 'Radiology', hours: '9 AM–5 PM', status: 'Active' },
+        { id: 'REC001', name: 'Sarah Connor', role: 'RECEPTIONIST', password: 'rec123', contact: '555-0301', age: 30, specialization: 'N/A', department: 'N/A', hours: '09:00 AM - 05:00 PM', status: 'Active' },
+        { id: 'PHM001', name: 'Charlie Brown', role: 'PHARMACIST', password: 'ph123', contact: '555-0401', age: 32, specialization: 'N/A', department: 'N/A', hours: '09:00 AM - 06:00 PM', status: 'Active' },
+        { id: 'CAS001', name: 'Edward Nygma', role: 'CASHIER', password: 'cash123', contact: '555-0501', age: 35, specialization: 'N/A', department: 'N/A', hours: '09:00 AM - 06:00 PM', status: 'Active' }
+      ],
+      appointments: [
+        { id: 'APP001', patientId: 'PAT001', doctorId: 'DOC001', reason: 'Fever and chest tightness', date: '2026-07-27', time: '10:00 AM', status: 'COMPLETED', viewStatus: 'ACTIVE' }
+      ],
+      prescriptions: [
+        {
+          id: 'RX-4240',
+          appointmentId: 'APP001',
+          doctorId: 'DOC001',
+          patientId: 'PAT001',
+          items: [
+            { medicineName: 'Paracetamol 500mg', numberOfDays: 5, timesPerDay: 2, price: 10.00 },
+            { medicineName: 'Amoxicillin 250mg', numberOfDays: 7, timesPerDay: 3, price: 15.00 }
+          ],
+          status: 'PHARMACY_PROCESSED'
+        }
+      ],
+      labs: [
+        { id: 'LAB-7540', appointmentId: 'APP001', patientId: 'PAT001', doctorId: 'DOC001', department: 'Radiology', specialization: 'X-Ray', assignedSpecialistId: 'LAB001', testPrice: 50.00, remarks: 'Chest X-ray shows minor congestion.', fileData: null, fileName: '', status: 'COMPLETED' }
+      ],
+      invoices: [],
+      queries: []
+    };
+
+    function loadPersistedState() {
+      const saved = localStorage.getItem('mediflow_hms_master_v12');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error("Parse error", e); }
+      }
+      return defaultState;
+    }
+
+    const state = loadPersistedState();
+
+    function persistState() {
+      localStorage.setItem('mediflow_hms_master_v12', JSON.stringify(state));
+    }
+
+    function toggleAuthTab(tab) {
+      document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+      document.getElementById('tab-btn-login').className = tab === 'login' ? 'flex-1 pb-3 text-xs font-bold border-b-2 border-brand-600 text-brand-600' : 'flex-1 pb-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600';
+      document.getElementById('tab-btn-register').className = tab === 'register' ? 'flex-1 pb-3 text-xs font-bold border-b-2 border-brand-600 text-brand-600' : 'flex-1 pb-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600';
+    }
+
+    function handlePatientSelfRegistration(e) {
+      e.preventDefault();
+      const pid = 'PAT' + String(state.users.filter(u => u.role === 'PATIENT').length + 1).padStart(3, '0');
+      const today = new Date().toISOString().split('T')[0];
+
+      const newPatient = {
+        id: pid,
+        name: document.getElementById('reg-name').value,
+        contact: document.getElementById('reg-contact').value,
+        age: parseInt(document.getElementById('reg-age').value),
+        address: document.getElementById('reg-address').value,
+        discount: document.getElementById('reg-discount').value,
+        password: document.getElementById('reg-password').value,
+        role: 'PATIENT',
+        firstLogin: false,
+        regDate: today,
+        status: 'Active'
+      };
+
+      state.users.push(newPatient);
+      persistState();
+
+      alert(`Account Created! Patient ID: ${pid}. Please log in.`);
+      e.target.reset();
+      toggleAuthTab('login');
+      document.getElementById('login-role').value = 'PATIENT';
+      document.getElementById('login-id').value = pid;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const role = document.getElementById('login-role').value;
+      const id = document.getElementById('login-id').value;
+      const pass = document.getElementById('login-password').value;
+
+      const user = state.users.find(u => (u.id === id || u.name === id) && u.role === role && u.password === pass);
+      if (!user) {
+        alert("Authentication Failed: Invalid ID, Role, or Password.");
+        return;
+      }
+
+      state.currentUser = user;
+      persistState();
+
+      if (user.role === 'PATIENT' && user.firstLogin) {
+        document.getElementById('first-login-modal').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('active-session-label').innerText = `Logged in as: ${user.name} (${user.id})`;
+      document.getElementById('active-user-badge').innerText = `Role: ${user.role}`;
+
+      renderPortals();
+    }
+
+    function handleFirstLoginPasswordChange(e) {
+      e.preventDefault();
+      const currentPass = document.getElementById('pass-temp-current').value;
+      const newPass = document.getElementById('pass-new').value;
+      const confirmPass = document.getElementById('pass-confirm').value;
+
+      if (currentPass !== state.currentUser.password) { alert("Temporary password mismatch."); return; }
+      if (newPass !== confirmPass) { alert("New passwords do not match."); return; }
+
+      state.currentUser.password = newPass;
+      state.currentUser.firstLogin = false;
+      persistState();
+
+      document.getElementById('first-login-modal').classList.add('hidden');
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('active-session-label').innerText = `Logged in as: ${state.currentUser.name} (${state.currentUser.id})`;
+      document.getElementById('active-user-badge').innerText = `Role: ${state.currentUser.role}`;
+
+      renderPortals();
+      alert("Password Updated Successfully!");
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function logout() {
+      state.currentUser = null;
+      persistState();
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('first-login-modal').classList.add('hidden');
+    }
+
+    function renderPortals() {
+      document.querySelectorAll('.portal-pane').forEach(p => p.classList.add('hidden'));
+      if (!state.currentUser) return;
+
+      const pane = document.getElementById(`portal-${state.currentUser.role}`);
+      if (pane) pane.classList.remove('hidden');
+
+      if (state.currentUser.role === 'PATIENT') renderPatientPortal();
+      if (state.currentUser.role === 'RECEPTIONIST') renderReceptionPortal();
+      if (state.currentUser.role === 'DOCTOR') renderDoctorPortal();
+      if (state.currentUser.role === 'PHARMACIST') renderPharmacyPortal();
+      if (state.currentUser.role === 'LABORATORY_SPECIALIST') renderLabPortal();
+      if (state.currentUser.role === 'ADMIN') renderAdminPortal();
+      if (state.currentUser.role === 'CASHIER') renderCashierPortal();
+    }
+
+    // ================= 9. PATIENT PORTAL FUNCTIONS =================
+    function renderPatientPortal() {
+      const p = state.currentUser;
+
+      // Section 3: Populate Auto-Fetched Registered Info
+      document.getElementById('pat-self-pname').innerText = `Name: ${p.name}`;
+      document.getElementById('pat-self-pid').innerText = `ID: ${p.id}`;
+      document.getElementById('pat-self-pcontact').innerText = `Contact: ${p.contact}`;
+      document.getElementById('pat-self-paddress').innerText = `Address: ${p.address || 'N/A'}`;
+
+      populatePatientDoctorDropdown();
+
+      // Section 7: Render My Appointments (Strict Patient Isolation)
+      const myAppts = state.appointments.filter(a => a.patientId === p.id && a.viewStatus !== 'CLOSED');
+      document.getElementById('patient-appts-list').innerHTML = myAppts.map(a => {
+        const doc = state.users.find(u => u.id === a.doctorId) || {};
+        return `
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-900">Appt Ref: <span class="text-brand-600">${a.id}</span> | Doctor: ${doc.name || a.doctorId}</p>
+              <p class="text-slate-500">Scheduled: ${a.date} @ ${a.time} | Problem: ${a.reason}</p>
+            </div>
+            <div class="space-x-2">
+              <span class="font-bold text-xs ${a.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'}">${a.status}</span>
+              <button onclick="openPatientApptDetailsModal('${a.id}')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm">VIEW APPOINTMENT</button>
+            </div>
+          </div>
+        `;
+      }).join('') || '<p class="text-slate-400">No active appointments found.</p>';
+
+      // Section 15: Render Queries & Replies
+      const myQueries = state.queries.filter(q => q.patientId === p.id);
+      document.getElementById('patient-queries-history').innerHTML = myQueries.map(q => `
+        <div class="p-3 bg-slate-50 border rounded-xl space-y-1">
+          <p class="font-bold text-slate-900">Query Ref: ${q.id} — "${q.text}"</p>
+          <p class="${q.status === 'RESOLVED' ? 'text-emerald-600 font-bold' : 'text-amber-600 font-bold'}">
+            ${q.status === 'RESOLVED' ? `Reception Reply: ${q.reply}` : 'Status: Pending Receptionist Reply'}
+          </p>
+        </div>
+      `).join('') || '<p class="text-slate-400">No administrative queries submitted.</p>';
+
+      // Render Central Prescriptions
+      const myRx = state.prescriptions.filter(rx => rx.patientId === p.id);
+      document.getElementById('patient-rx-list').innerHTML = myRx.map(rx => `
+        <div class="p-3 bg-slate-50 border rounded-xl space-y-1">
+          <p class="font-bold text-slate-900">Rx ID: ${rx.id} | Status: <span class="text-brand-600">${rx.status}</span></p>
+          <p class="text-slate-600">Medicines: ${rx.items.map(i => i.medicineName + (i.price ? ' ($' + i.price.toFixed(2) + ')' : ' (Price Pending)')).join(', ')}</p>
+        </div>
+      `).join('') || '<p class="text-slate-400">No central prescriptions recorded.</p>';
+
+      // Section 11: Render Diagnostic Reports & Files
+      const myLabs = state.labs.filter(l => l.patientId === p.id);
+      document.getElementById('patient-labs-list').innerHTML = myLabs.map(l => `
+        <div class="p-3 bg-slate-50 border rounded-xl space-y-2">
+          <div class="flex justify-between items-center">
+            <span>Test: <strong>${l.specialization}</strong> (${l.department})</span>
+            <span class="font-bold ${l.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'}">${l.status}</span>
+          </div>
+          ${l.remarks ? `<p class="bg-white p-2 rounded border text-slate-700"><strong>Findings:</strong> ${l.remarks}</p>` : ''}
+          ${l.fileData ? `
+            <a href="${l.fileData}" download="${l.fileName || 'Diagnostic_Report'}" target="_blank" class="inline-flex items-center bg-slate-900 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg">
+              <i class="fa-solid fa-download mr-1.5"></i>Download Attached Report (${l.fileName})
+            </a>
+          ` : ''}
+        </div>
+      `).join('') || '<p class="text-slate-400">No laboratory test orders found.</p>';
+
+      // Section 13: Render Final Invoices & Receipts
+      const myBills = state.invoices.filter(i => i.patientId === p.id);
+      document.getElementById('patient-bills-list').innerHTML = myBills.map(i => `
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+          <div>
+            <p class="font-bold text-slate-900">Invoice ID: ${i.id}</p>
+            <p class="text-slate-500">Method: <strong>${i.paymentMethod}</strong> | Paid: <strong class="text-emerald-600">$${i.finalTotal.toFixed(2)}</strong></p>
+          </div>
+          <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full text-xs"><i class="fa-solid fa-check-circle mr-1"></i>PAID</span>
+        </div>
+      `).join('') || '<p class="text-slate-400">No completed settlement statements found.</p>';
+    }
+
+    function populatePatientDoctorDropdown() {
+      const docs = state.users.filter(u => u.role === 'DOCTOR' && u.status === 'Active');
+      document.getElementById('pat-appt-doctor-id').innerHTML = docs.map(d => `<option value="${d.id}">${d.name} (${d.specialization})</option>`).join('');
+      if (docs.length > 0) updatePatientDoctorAvailabilityDisplay(docs[0].id);
+    }
+
+    function updatePatientDoctorAvailabilityDisplay(docId) {
+      const doc = state.users.find(u => u.id === docId);
+      if (doc) {
+        document.getElementById('pat-doc-avail-text').innerText = doc.hours || '09:00 AM - 05:00 PM';
+        document.getElementById('pat-doc-avail-badge').classList.remove('hidden');
+      }
+    }
+
+    // Section 6: Patient Self-Booking Handler
+    function handlePatientSelfBookAppt(e) {
+      e.preventDefault();
+      const p = state.currentUser;
+      const docId = document.getElementById('pat-appt-doctor-id').value;
+      const date = document.getElementById('pat-appt-date').value;
+      const time = document.getElementById('pat-appt-time').value;
+
+      // Section 4 & 5: Anti Double-Booking Schedule Check
+      const isConflict = state.appointments.some(a => a.doctorId === docId && a.date === date && a.time === time && a.status !== 'CANCELLED');
+      if (isConflict) {
+        alert(`SCHEDULING CONFLICT: Doctor is already booked at ${time} on ${date}. Select another time slot.`);
+        return;
+      }
+
+      const apt = {
+        id: 'APP-' + Math.floor(1000 + Math.random() * 9000),
+        patientId: p.id,
+        doctorId: docId,
+        discount: document.getElementById('pat-appt-discount').value,
+        reason: document.getElementById('pat-appt-reason').value,
+        date: date,
+        time: time,
+        status: 'PENDING',
+        viewStatus: 'ACTIVE',
+        createdSource: 'PATIENT'
+      };
+
+      state.appointments.push(apt);
+      persistState();
+
+      alert(`Appointment Booked Successfully! Confirmation Reference: ${apt.id}`);
+      e.target.reset();
+      renderPatientPortal();
+    }
+
+    // Section 8: View Appointment Details Modal
+    function openPatientApptDetailsModal(appid) {
+      const apt = state.appointments.find(a => a.id === appid);
+      if (!apt || apt.patientId !== state.currentUser.id) return;
+
+      const patient = state.currentUser;
+      const doctor = state.users.find(u => u.id === apt.doctorId) || {};
+      const rx = state.prescriptions.find(p => p.appointmentId === appid);
+      const lab = state.labs.find(l => l.appointmentId === appid);
+      const inv = state.invoices.find(i => i.prescriptionId === (rx ? rx.id : ''));
+
+      document.getElementById('pv-appid').innerText = apt.id;
+      document.getElementById('pv-appstatus').innerText = apt.status;
+      document.getElementById('pv-pname').innerText = patient.name;
+      document.getElementById('pv-pid').innerText = patient.id;
+      document.getElementById('pv-page').innerText = patient.age;
+      document.getElementById('pv-pcontact').innerText = patient.contact;
+      document.getElementById('pv-paddress').innerText = patient.address || 'N/A';
+      document.getElementById('pv-pdiscount').innerText = patient.discount || 'None';
+      document.getElementById('pv-docname').innerText = doctor.name || apt.doctorId;
+      document.getElementById('pv-docspec').innerText = doctor.specialization || 'General Practitioner';
+      document.getElementById('pv-datetime').innerText = `${apt.date} @ ${apt.time}`;
+      document.getElementById('pv-reason').innerText = apt.reason;
+
+      // Section 9: Prescription Table Render
+      const rxBox = document.getElementById('pv-rx-box');
+      if (rx && rx.items.length > 0) {
+        document.getElementById('pv-rx-items-body').innerHTML = rx.items.map(i => `
+          <tr>
+            <td class="p-2 font-bold">${i.medicineName}</td>
+            <td class="p-2">${i.numberOfDays} Days</td>
+            <td class="p-2">${i.timesPerDay} Times/Day</td>
+            <td class="p-2 text-right font-bold text-emerald-600">${i.price ? '$' + i.price.toFixed(2) : 'Pending Pharmacist'}</td>
+          </tr>
+        `).join('');
+        rxBox.classList.remove('hidden');
+      } else {
+        rxBox.classList.add('hidden');
+      }
+
+      // Sections 10, 11, 12: Lab Section Render
+      const labBox = document.getElementById('pv-lab-box');
+      if (lab) {
+        document.getElementById('pv-lab-spec').innerText = lab.specialization;
+        document.getElementById('pv-lab-dept').innerText = lab.department;
+        document.getElementById('pv-lab-price').innerText = `$${(lab.testPrice || 0).toFixed(2)}`;
+        document.getElementById('pv-lab-status').innerText = lab.status;
+
+        const reportSection = document.getElementById('pv-lab-report-section');
+        if (lab.status === 'COMPLETED') {
+          document.getElementById('pv-lab-remarks').innerText = lab.remarks || lab.results || 'No written remarks.';
+          if (lab.fileData) {
+            const btn = document.getElementById('pv-lab-download-btn');
+            btn.href = lab.fileData;
+            btn.download = lab.fileName || 'Diagnostic_Report';
+            document.getElementById('pv-lab-filename').innerText = lab.fileName || 'Report File';
+            btn.classList.remove('hidden');
+          }
+          reportSection.classList.remove('hidden');
+        } else {
+          reportSection.classList.add('hidden');
+        }
+        labBox.classList.remove('hidden');
+      } else {
+        labBox.classList.add('hidden');
+      }
+
+      // Section 13: Billing Section Render
+      const billBox = document.getElementById('pv-bill-box');
+      if (inv) {
+        document.getElementById('pv-bill-med').innerText = `$${inv.medicineTotal.toFixed(2)}`;
+        document.getElementById('pv-bill-lab').innerText = `$${inv.labTotal.toFixed(2)}`;
+        document.getElementById('pv-bill-subtotal').innerText = `$${inv.subtotal.toFixed(2)}`;
+        document.getElementById('pv-bill-discount').innerText = `-$${inv.discountAmount.toFixed(2)}`;
+        document.getElementById('pv-bill-final').innerText = `$${inv.finalTotal.toFixed(2)}`;
+        document.getElementById('pv-bill-method').innerText = inv.paymentMethod;
+        billBox.classList.remove('hidden');
+      } else {
+        billBox.classList.add('hidden');
+      }
+
+      window.activePatientOpenApptId = appid;
+      document.getElementById('patient-appt-details-modal').classList.remove('hidden');
+    }
+
+    // Section 14: Patient-side Close Appointment Handler
+    function closePatientAppointmentView() {
+      const appid = window.activePatientOpenApptId;
+      const apt = state.appointments.find(a => a.id === appid);
+      if (apt) {
+        apt.viewStatus = 'CLOSED'; // Acknowledgment status update
+        persistState();
+        closeModal('patient-appt-details-modal');
+        renderPatientPortal();
+        alert("Appointment record view closed.");
+      }
+    }
+
+    // Section 16: Submit Query Handler
+    function handlePatientQuerySubmit(e) {
+      e.preventDefault();
+      const q = {
+        id: 'QRY-' + Math.floor(1000 + Math.random() * 9000),
+        patientId: state.currentUser.id,
+        text: document.getElementById('patient-query-text').value,
+        reply: null,
+        status: 'PENDING'
+      };
+      state.queries.push(q);
+      persistState();
+      alert("Administrative query dispatched to Receptionist.");
+      e.target.reset();
+      renderPatientPortal();
+    }
+
+    // ================= OTHER PORTAL RENDERERS (UNTOUCHED) =================
+    function renderCashierPortal() {
+      const pendingRx = state.prescriptions.filter(p => p.status === 'PHARMACY_PROCESSED');
+      const paidInvoices = state.invoices.filter(i => i.isPaid);
+
+      document.getElementById('cashier-bills-list').innerHTML = pendingRx.map(rx => {
+        const patient = state.users.find(u => u.id === rx.patientId) || {};
+        const medTotal = rx.items.reduce((sum, item) => sum + (item.price || 0), 0);
+        return `
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-900">Patient ID: <span class="text-brand-600">${rx.patientId}</span> | Rx Ref: ${rx.id}</p>
+              <p class="text-slate-500">Name: ${patient.name || rx.patientId} | Medicine Charges: <strong class="text-emerald-600">$${medTotal.toFixed(2)}</strong></p>
+            </div>
+            <button onclick="openCashierBillingModal('${rx.id}')" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md"><i class="fa-solid fa-calculator mr-1"></i>Compute Invoice & Collect Payment</button>
+          </div>
+        `;
+      }).join('') || '<p class="text-slate-400 p-4 bg-slate-50 rounded-xl">No pending billing records.</p>';
+
+      document.getElementById('cashier-history-list').innerHTML = paidInvoices.map(inv => `
+        <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
+          <div><p class="font-bold">Invoice ID: ${inv.id} | Patient: ${inv.patientId}</p><p class="text-slate-500">Method: ${inv.paymentMethod} | Paid: $${inv.finalTotal.toFixed(2)}</p></div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">PAID</span>
+        </div>
+      `).join('') || '<p class="text-slate-400 p-4 bg-slate-50 rounded-xl">No history.</p>';
+    }
+
+    function openCashierBillingModal(rxId) {
+      const rx = state.prescriptions.find(p => p.id === rxId);
+      if (!rx) return;
+
+      const patient = state.users.find(u => u.id === rx.patientId) || {};
+      const doctor = state.users.find(u => u.id === rx.doctorId) || {};
+      const apt = state.appointments.find(a => a.id === rx.appointmentId) || {};
+      const lab = state.labs.find(l => l.appointmentId === rx.appointmentId);
+
+      document.getElementById('modal-cash-rxid').value = rx.id;
+      document.getElementById('modal-cash-pid').value = rx.patientId;
+      document.getElementById('modal-cash-pname').innerText = patient.name || 'N/A';
+      document.getElementById('modal-cash-pid-text').innerText = patient.id || 'N/A';
+      document.getElementById('modal-cash-page').innerText = patient.age || 'N/A';
+      document.getElementById('modal-cash-pcontact').innerText = patient.contact || 'N/A';
+      document.getElementById('modal-cash-pdiscount').innerText = patient.discount || 'None';
+      document.getElementById('modal-cash-doc').innerText = doctor.name || rx.doctorId;
+      document.getElementById('modal-cash-reason').innerText = apt.reason || 'N/A';
+
+      const medRowsHtml = rx.items.map(item => `
+        <tr>
+          <td class="p-2 font-bold text-slate-800">${item.medicineName}</td>
+          <td class="p-2">${item.numberOfDays} Days</td>
+          <td class="p-2">${item.timesPerDay} Times/Day</td>
+          <td class="p-2 text-right font-bold text-emerald-600">$${(item.price || 0).toFixed(2)}</td>
+        </tr>
+      `).join('');
+      document.getElementById('modal-cash-med-rows').innerHTML = medRowsHtml;
+
+      const labBox = document.getElementById('modal-cash-lab-info');
+      if (lab) {
+        document.getElementById('modal-cash-lab-type').innerText = `Test Type: ${lab.specialization} (${lab.department})`;
+        document.getElementById('modal-cash-lab-price').innerText = `Test Price: $${(lab.testPrice || 0).toFixed(2)}`;
+        labBox.classList.remove('hidden');
+      } else {
+        labBox.classList.add('hidden');
+      }
+
+      const medTotal = rx.items.reduce((sum, item) => sum + (item.price || 0), 0);
+      const labTotal = lab ? (lab.testPrice || 0) : 0.00;
+      const subtotal = medTotal + labTotal;
+
+      const rates = { None: 0, Student: 0.10, Teacher: 0.15, 'Senior Citizen': 0.20 };
+      const discCat = patient.discount || 'None';
+      const discRate = rates[discCat] || 0;
+      const discountAmount = subtotal * discRate;
+      const finalTotal = subtotal - discountAmount;
+
+      document.getElementById('calc-med-total').innerText = `$${medTotal.toFixed(2)}`;
+      document.getElementById('calc-lab-total').innerText = `$${labTotal.toFixed(2)}`;
+      document.getElementById('calc-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+      document.getElementById('calc-discount-cat').innerText = discCat;
+      document.getElementById('calc-discount-rate').innerText = `${(discRate * 100).toFixed(0)}%`;
+      document.getElementById('calc-discount-amt').innerText = `-$${discountAmount.toFixed(2)}`;
+      document.getElementById('calc-final-total').innerText = `$${finalTotal.toFixed(2)}`;
+
+      document.getElementById('cashier-billing-modal').classList.remove('hidden');
+    }
+
+    function handleConfirmCashierPayment(e) {
+      e.preventDefault();
+      const rxId = document.getElementById('modal-cash-rxid').value;
+      const pid = document.getElementById('modal-cash-pid').value;
+      const rx = state.prescriptions.find(p => p.id === rxId);
+      if (!rx) return;
+
+      const patient = state.users.find(u => u.id === pid) || {};
+      const lab = state.labs.find(l => l.appointmentId === rx.appointmentId);
+
+      const medTotal = rx.items.reduce((sum, item) => sum + (item.price || 0), 0);
+      const labTotal = lab ? (lab.testPrice || 0) : 0.00;
+      const subtotal = medTotal + labTotal;
+
+      const rates = { None: 0, Student: 0.10, Teacher: 0.15, 'Senior Citizen': 0.20 };
+      const discCat = patient.discount || 'None';
+      const discRate = rates[discCat] || 0;
+      const discountAmount = subtotal * discRate;
+      const finalTotal = subtotal - discountAmount;
+
+      const payMethod = document.querySelector('input[name="cashier-pay-method"]:checked').value;
+      const invId = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+
+      const invoice = {
+        id: invId,
+        patientId: pid,
+        prescriptionId: rxId,
+        medicineTotal: medTotal,
+        labTotal: labTotal,
+        subtotal: subtotal,
+        discountCategory: discCat,
+        discountRate: discRate,
+        discountAmount: discountAmount,
+        finalTotal: finalTotal,
+        paymentMethod: payMethod,
+        isPaid: true,
+        paymentDate: new Date().toISOString().split('T')[0],
+        cashierId: state.currentUser.id
+      };
+
+      state.invoices.push(invoice);
+      rx.status = 'BILLED';
+
+      persistState();
+      closeModal('cashier-billing-modal');
+      renderCashierPortal();
+      alert(`Invoice ${invId} Processed! Subtotal: $${subtotal.toFixed(2)}, Final Collected: $${finalTotal.toFixed(2)} (${payMethod})`);
+    }
+
+    function switchPharmacyTab(tab) {
+      document.getElementById('pharmacy-pane-pending').classList.toggle('hidden', tab !== 'pending');
+      document.getElementById('pharmacy-pane-processed').classList.toggle('hidden', tab !== 'processed');
+    }
+
+    function renderPharmacyPortal() {
+      const pending = state.prescriptions.filter(p => p.status === 'SENT_TO_PHARMACY');
+      const processed = state.prescriptions.filter(p => p.status === 'PHARMACY_PROCESSED' || p.status === 'BILLED' || p.status === 'COMPLETED');
+
+      document.getElementById('pharmacy-rx-list').innerHTML = pending.map(rx => {
+        const patient = state.users.find(u => u.id === rx.patientId) || {};
+        const doctor = state.users.find(u => u.id === rx.doctorId) || {};
+        return `
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-900">Rx ID: <span class="text-brand-600">${rx.id}</span> (Patient: <strong>${patient.name || rx.patientId}</strong>)</p>
+              <p class="text-slate-500">Doctor: ${doctor.name || rx.doctorId}</p>
+            </div>
+            <button onclick="openPharmacyPricingModal('${rx.id}')" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Enter Medicine Price & Forward</button>
+          </div>
+        `;
+      }).join('') || '<p class="text-slate-400 p-4 bg-slate-50 rounded-xl">No pending prescriptions.</p>';
+
+      document.getElementById('pharmacy-history-list').innerHTML = processed.map(rx => `
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+          <div><p class="font-bold">Rx ID: ${rx.id} | Patient: ${rx.patientId}</p></div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">PHARMACY_PROCESSED</span>
+        </div>
+      `).join('') || '<p class="text-slate-400 p-4 bg-slate-50 rounded-xl">No history.</p>';
+    }
+
+    function openPharmacyPricingModal(rxId) {
+      const rx = state.prescriptions.find(p => p.id === rxId);
+      if (!rx) return;
+
+      const patient = state.users.find(u => u.id === rx.patientId) || {};
+      const doctor = state.users.find(u => u.id === rx.doctorId) || {};
+      const apt = state.appointments.find(a => a.id === rx.appointmentId) || {};
+
+      document.getElementById('modal-ph-rxid').value = rx.id;
+      document.getElementById('modal-ph-pname').innerText = patient.name || 'N/A';
+      document.getElementById('modal-ph-pid').innerText = patient.id || 'N/A';
+      document.getElementById('modal-ph-page').innerText = patient.age || 'N/A';
+      document.getElementById('modal-ph-pcontact').innerText = patient.contact || 'N/A';
+      document.getElementById('modal-ph-pdiscount').innerText = patient.discount || 'None';
+      document.getElementById('modal-ph-doc').innerText = doctor.name || rx.doctorId;
+      document.getElementById('modal-ph-reason').innerText = apt.reason || 'N/A';
+
+      const rowsHtml = rx.items.map((item) => `
+        <tr class="ph-item-row">
+          <td class="p-2.5 font-bold text-slate-900">${item.medicineName}<input type="hidden" class="ph-med-name" value="${item.medicineName}"></td>
+          <td class="p-2.5">${item.numberOfDays} Days</td>
+          <td class="p-2.5">${item.timesPerDay} Times/Day</td>
+          <td class="p-2.5">
+            <input type="number" step="0.01" min="0.01" required value="${item.price || ''}" placeholder="Enter $ price" class="ph-med-price w-full p-1.5 border rounded text-xs font-bold text-brand-600 focus:ring-2 focus:ring-brand-500">
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('modal-ph-med-rows').innerHTML = rowsHtml;
+
+      const assocLab = state.labs.find(l => l.appointmentId === rx.appointmentId);
+      const labBox = document.getElementById('modal-ph-lab-info');
+
+      if (assocLab) {
+        document.getElementById('modal-ph-lab-type').innerText = `Test Type: ${assocLab.specialization} (${assocLab.department})`;
+        document.getElementById('modal-ph-lab-price').innerText = `Test Price (Entered by Doctor): $${(assocLab.testPrice || 0).toFixed(2)}`;
+        labBox.classList.remove('hidden');
+      } else {
+        labBox.classList.add('hidden');
+      }
+
+      document.getElementById('pharmacy-pricing-modal').classList.remove('hidden');
+    }
+
+    function handleSavePharmacyPricing(e) {
+      e.preventDefault();
+      const rxId = document.getElementById('modal-ph-rxid').value;
+      const rx = state.prescriptions.find(p => p.id === rxId);
+      if (!rx) return;
+
+      const itemRows = document.querySelectorAll('.ph-item-row');
+      let valid = true;
+
+      itemRows.forEach(row => {
+        const name = row.querySelector('.ph-med-name').value;
+        const price = parseFloat(row.querySelector('.ph-med-price').value);
+
+        if (isNaN(price) || price <= 0) {
+          valid = false;
+        } else {
+          const targetItem = rx.items.find(i => i.medicineName === name);
+          if (targetItem) targetItem.price = price;
+        }
+      });
+
+      if (!valid) {
+        alert("VALIDATION ERROR: Every prescribed medicine must have a valid positive price entered.");
+        return;
+      }
+
+      rx.status = 'PHARMACY_PROCESSED';
+      persistState();
+      closeModal('pharmacy-pricing-modal');
+      renderPharmacyPortal();
+      alert("Pharmacy processing complete! Forwarded to Cashier.");
+    }
+
+    function renderDoctorPortal() {
+      const docId = state.currentUser.id;
+      const assigned = state.appointments.filter(a => a.doctorId === docId && a.status === 'PENDING');
+      const history = state.appointments.filter(a => a.doctorId === docId && a.status === 'COMPLETED');
+
+      document.getElementById('table-doctor-appointments').innerHTML = assigned.map(a => {
+        const p = state.users.find(u => u.id === a.patientId) || {};
+        return `
+          <tr>
+            <td class="p-2.5 font-bold text-brand-600">${a.id}</td>
+            <td class="p-2.5 font-bold">${p.name || 'Unknown'}</td>
+            <td class="p-2.5">${p.age || 'N/A'}</td>
+            <td class="p-2.5">${a.reason}</td>
+            <td class="p-2.5">${a.date}</td>
+            <td class="p-2.5">${a.time}</td>
+            <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">${a.status}</span></td>
+            <td class="p-2.5 text-right space-x-1">
+              <button onclick="viewPatientDetails('${a.id}')" class="text-brand-600 font-bold bg-brand-50 px-2 py-1 rounded border border-brand-200">View Patient</button>
+              <button onclick="startDoctorConsultation('${a.id}')" class="text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">Diagnose</button>
+            </td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="8" class="p-3 text-center text-slate-400">No pending appointments assigned to your schedule.</td></tr>';
+
+      document.getElementById('doctor-history-list').innerHTML = history.map(a => `
+        <div class="p-2.5 bg-slate-50 border rounded-lg flex justify-between">
+          <span>Apt ID: <strong>${a.id}</strong> | Patient: ${a.patientId} | Reason: ${a.reason}</span>
+          <span class="font-bold text-emerald-600">COMPLETED</span>
+        </div>
+      `).join('') || '<p class="text-slate-400">No archived consultation history.</p>';
+    }
+
+    function viewPatientDetails(appid) {
+      const apt = state.appointments.find(a => a.id === appid);
+      if (!apt) return;
+
+      if (apt.doctorId !== state.currentUser.id) {
+        alert("ACCESS DENIED: You are not authorized to access this patient's records.");
+        return;
+      }
+
+      const p = state.users.find(u => u.id === apt.patientId) || {};
+      const d = state.currentUser;
+
+      document.getElementById('v-p-name').innerText = p.name;
+      document.getElementById('v-p-id').innerText = p.id;
+      document.getElementById('v-p-age').innerText = p.age;
+      document.getElementById('v-p-contact').innerText = p.contact;
+      document.getElementById('v-p-address').innerText = p.address || 'N/A';
+      document.getElementById('v-p-discount').innerText = p.discount || 'None';
+      document.getElementById('v-p-reason').innerText = apt.reason;
+      document.getElementById('v-p-datetime').innerText = `${apt.date} at ${apt.time}`;
+      document.getElementById('v-p-doc').innerText = d.name;
+      document.getElementById('v-p-spec').innerText = d.specialization;
+      document.getElementById('v-p-status').innerText = apt.status;
+
+      document.getElementById('patient-view-modal').classList.remove('hidden');
+    }
+
+    function startDoctorConsultation(appid) {
+      const apt = state.appointments.find(a => a.id === appid);
+      if (!apt) return;
+
+      document.getElementById('doc-active-appid').value = appid;
+      document.getElementById('doc-active-pid').value = apt.patientId;
+      document.getElementById('active-consultation-badge').innerText = `Consultation for Appt: ${appid}`;
+
+      document.getElementById('medicine-table-body').innerHTML = '';
+      addMedicineRow('Paracetamol 500mg', 5, 2);
+
+      document.getElementById('doctor-consultation-panel').classList.remove('hidden');
+      updateMatchingLabSpecialists(document.getElementById('doc-lab-spec').value);
+    }
+
+    function addMedicineRow(name = '', days = 5, times = 2) {
+      const tbody = document.getElementById('medicine-table-body');
+      const tr = document.createElement('tr');
+      tr.className = 'medicine-row';
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" value="${name}" required class="med-name w-full border p-1 rounded text-xs"></td>
+        <td class="p-2"><input type="number" value="${days}" required class="med-days w-full border p-1 rounded text-xs"></td>
+        <td class="p-2"><input type="number" value="${times}" required class="med-times w-full border p-1 rounded text-xs"></td>
+        <td class="p-2"><input type="text" disabled placeholder="Blank / Pharmacist" class="w-full bg-slate-100 border p-1 rounded text-xs italic"></td>
+        <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-rose-600 font-bold text-xs"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function toggleDoctorLabSection(show) { document.getElementById('doctor-lab-request-fields').classList.toggle('hidden', !show); }
+
+    function updateMatchingLabSpecialists(specVal) {
+      const parts = specVal.split('|');
+      const dept = parts[1];
+      const specialists = state.users.filter(u => u.role === 'LABORATORY_SPECIALIST' && u.department === dept);
+
+      const select = document.getElementById('doc-lab-assigned-spec');
+      if (specialists.length > 0) {
+        select.innerHTML = specialists.map(s => `<option value="${s.id}">${s.name} (${s.specialization})</option>`).join('');
+      } else {
+        select.innerHTML = `<option value="">Auto-Assign to ${dept} Pool</option>`;
+      }
+    }
+
+    function handleDoctorSubmitConsultation(e) {
+      e.preventDefault();
+      const appid = document.getElementById('doc-active-appid').value;
+      const pid = document.getElementById('doc-active-pid').value;
+
+      const medRows = document.querySelectorAll('.medicine-row');
+      const items = [];
+      medRows.forEach(row => {
+        items.push({
+          medicineName: row.querySelector('.med-name').value,
+          numberOfDays: parseInt(row.querySelector('.med-days').value),
+          timesPerDay: parseInt(row.querySelector('.med-times').value),
+          price: null
+        });
+      });
+
+      const rxId = 'RX-' + Math.floor(1000 + Math.random() * 9000);
+      state.prescriptions.push({ id: rxId, appointmentId: appid, doctorId: state.currentUser.id, patientId: pid, items: items, status: 'SENT_TO_PHARMACY' });
+
+      const isLabYes = document.querySelector('input[name="lab-required"]:checked').value === 'YES';
+      if (isLabYes) {
+        const labVal = document.getElementById('doc-lab-spec').value.split('|');
+        const labPriceInput = parseFloat(document.getElementById('doc-lab-price').value || 0);
+
+        let existingLab = state.labs.find(l => l.appointmentId === appid);
+        if (existingLab) {
+          existingLab.testPrice = labPriceInput;
+          existingLab.department = labVal[1];
+          existingLab.specialization = labVal[2];
+          existingLab.assignedSpecialistId = document.getElementById('doc-lab-assigned-spec').value;
+        } else {
+          state.labs.push({
+            id: 'LAB-' + Math.floor(1000 + Math.random() * 9000),
+            appointmentId: appid,
+            patientId: pid,
+            doctorId: state.currentUser.id,
+            department: labVal[1],
+            specialization: labVal[2],
+            assignedSpecialistId: document.getElementById('doc-lab-assigned-spec').value,
+            testPrice: labPriceInput,
+            remarks: '', fileData: null, fileName: '', status: 'PENDING'
+          });
+        }
+      }
+
+      persistState();
+      alert(`Central Prescription ${rxId} created and sent to Pharmacy!`);
+      document.getElementById('doctor-consultation-panel').classList.add('hidden');
+      renderDoctorPortal();
+    }
+
+    function closeDoctorAppointment() {
+      const appid = document.getElementById('doc-active-appid').value;
+      const apt = state.appointments.find(a => a.id === appid);
+      if (apt) {
+        apt.status = 'COMPLETED';
+        persistState();
+        alert(`Appointment ${appid} closed and marked COMPLETED.`);
+        document.getElementById('doctor-consultation-panel').classList.add('hidden');
+        renderDoctorPortal();
+      }
+    }
+
+    function renderLabPortal() {
+      const user = state.currentUser;
+      const assignedLabs = state.labs.filter(l => {
+        if (!user.department || user.department === 'N/A') return true;
+        return l.department === user.department || l.specialization === user.specialization;
+      });
+
+      document.getElementById('lab-reports-list').innerHTML = assignedLabs.map(l => `
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
+          <div class="space-y-1">
+            <p class="font-bold text-slate-900">Report ID: ${l.id} | Type: <span class="text-brand-600">${l.specialization}</span></p>
+            <p class="text-slate-500">Patient ID: <strong>${l.patientId}</strong> | Status: ${l.status}</p>
+            ${l.remarks ? `<p class="text-slate-700 bg-white p-2 rounded border mt-2"><strong>Findings:</strong> ${l.remarks}</p>` : ''}
+          </div>
+          <div>
+            ${l.status === 'PENDING' ? `
+              <button onclick="openLabUploadModal('${l.id}')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-md transition-all">Submit Clinical Findings</button>
+            ` : `
+              <span class="text-emerald-600 font-bold">COMPLETED</span>
+            `}
+          </div>
+        </div>
+      `).join('') || '<p class="text-slate-400 p-4 bg-slate-50 rounded-xl">No diagnostic orders assigned.</p>';
+    }
+
+    function openLabUploadModal(labId) {
+      const lab = state.labs.find(l => l.id === labId);
+      if (!lab) return;
+
+      document.getElementById('modal-lab-id').value = labId;
+      document.getElementById('modal-lab-ref').innerText = lab.id;
+      document.getElementById('modal-lab-pid').innerText = lab.patientId;
+      document.getElementById('modal-lab-spec').innerText = `${lab.department} (${lab.specialization})`;
+      document.getElementById('modal-lab-remarks').value = '';
+      document.getElementById('modal-lab-file').value = '';
+
+      document.getElementById('lab-upload-modal').classList.remove('hidden');
+    }
+
+    function handleLabReportSubmission(e) {
+      e.preventDefault();
+      const labId = document.getElementById('modal-lab-id').value;
+      const lab = state.labs.find(l => l.id === labId);
+      if (!lab) return;
+
+      const remarks = document.getElementById('modal-lab-remarks').value;
+      const fileInput = document.getElementById('modal-lab-file');
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+          lab.fileData = event.target.result;
+          lab.fileName = file.name;
+          lab.remarks = remarks;
+          lab.results = remarks;
+          lab.status = 'COMPLETED';
+
+          persistState();
+          closeModal('lab-upload-modal');
+          renderLabPortal();
+          alert("Diagnostic Report & Clinical Findings Submitted Successfully!");
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        lab.remarks = remarks;
+        lab.results = remarks;
+        lab.status = 'COMPLETED';
+
+        persistState();
+        closeModal('lab-upload-modal');
+        renderLabPortal();
+        alert("Clinical Remarks Submitted Successfully!");
+      }
+    }
+
+    function handleRoleSelectionChange(role) {
+      document.getElementById('wrapper-doc-spec').classList.toggle('hidden', role !== 'DOCTOR');
+      document.getElementById('wrapper-lab-spec').classList.toggle('hidden', role !== 'LABORATORY_SPECIALIST');
+    }
+
+    function handleAdminAddStaff(e) {
+      e.preventDefault();
+      const role = document.getElementById('staff-role').value;
+      
+      let prefix = 'STF';
+      if (role === 'DOCTOR') prefix = 'DOC';
+      if (role === 'LABORATORY_SPECIALIST') prefix = 'LAB';
+      if (role === 'RECEPTIONIST') prefix = 'REC';
+      if (role === 'PHARMACIST') prefix = 'PHM';
+      if (role === 'CASHIER') prefix = 'CAS';
+
+      const sid = prefix + String(state.users.filter(u => u.role === role).length + 1).padStart(3, '0');
+
+      let spec = 'N/A';
+      let dept = 'N/A';
+
+      if (role === 'DOCTOR') {
+        spec = document.getElementById('staff-doc-spec').value;
+        dept = spec;
+      } else if (role === 'LABORATORY_SPECIALIST') {
+        const parts = document.getElementById('staff-lab-spec').value.split('|');
+        dept = parts[1];
+        spec = parts[2];
+      }
+
+      const staff = {
+        id: sid,
+        name: document.getElementById('staff-name').value,
+        contact: document.getElementById('staff-contact').value,
+        age: parseInt(document.getElementById('staff-age').value),
+        role,
+        specialization: spec,
+        department: dept,
+        hours: document.getElementById('staff-hours').value,
+        password: document.getElementById('staff-password').value,
+        status: 'Active'
+      };
+
+      state.users.push(staff);
+      persistState();
+      renderAdminPortal();
+      alert(`Staff Member Appointed: ${staff.name} [${sid}]`);
+      e.target.reset();
+    }
+
+    function removeStaffPermanently(sid) {
+      if (confirm(`Are you sure you want to PERMANENTLY remove staff member [${sid}]?`)) {
+        state.users = state.users.filter(u => u.id !== sid);
+        persistState();
+        renderAdminPortal();
+        alert(`Staff member [${sid}] permanently removed.`);
+      }
+    }
+
+    function removePatientPermanently(pid) {
+      if (confirm(`Are you sure you want to PERMANENTLY remove patient [${pid}]?`)) {
+        state.users = state.users.filter(u => u.id !== pid);
+        state.appointments = state.appointments.filter(a => a.patientId !== pid);
+        persistState();
+        renderAdminPortal();
+        alert(`Patient [${pid}] permanently removed.`);
+      }
+    }
+
+    function renderAdminPortal() {
+      const patients = state.users.filter(u => u.role === 'PATIENT');
+      document.getElementById('stat-total-patients').innerText = patients.length;
+      document.getElementById('stat-total-appointments').innerText = state.appointments.length;
+      document.getElementById('stat-diagnosed').innerText = state.appointments.filter(a => a.status === 'COMPLETED').length;
+      
+      const paidInvoices = state.invoices.filter(i => i.isPaid);
+      const totalRev = paidInvoices.reduce((sum, i) => sum + i.finalTotal, 0);
+      document.getElementById('stat-revenue').innerText = `$${totalRev.toFixed(2)}`;
+
+      const staffList = state.users.filter(u => u.role !== 'PATIENT' && u.role !== 'ADMIN');
+      document.getElementById('table-admin-staff').innerHTML = staffList.map(s => `
+        <tr>
+          <td class="p-2.5 font-bold">${s.name}</td>
+          <td class="p-2.5">${s.id}</td>
+          <td class="p-2.5">${s.age}</td>
+          <td class="p-2.5">${s.contact}</td>
+          <td class="p-2.5 font-semibold">${s.role}</td>
+          <td class="p-2.5">${s.specialization || 'N/A'}</td>
+          <td class="p-2.5">${s.department || 'N/A'}</td>
+          <td class="p-2.5">${s.hours || 'N/A'}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${s.status || 'Active'}</span></td>
+          <td class="p-2.5 text-right">
+            <button onclick="removeStaffPermanently('${s.id}')" class="text-rose-600 hover:text-rose-800 font-bold bg-rose-50 px-2 py-1 rounded border border-rose-200">Delete Permanently</button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('table-admin-patients').innerHTML = patients.map(p => `
+        <tr>
+          <td class="p-2.5 font-bold text-slate-900">${p.name}</td>
+          <td class="p-2.5 font-semibold text-brand-600">${p.id}</td>
+          <td class="p-2.5">${p.age}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">${p.discount}</span></td>
+          <td class="p-2.5">${p.contact}</td>
+          <td class="p-2.5">${p.regDate || '2026-07-27'}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${p.status || 'Active'}</span></td>
+          <td class="p-2.5 text-right">
+            <button onclick="removePatientPermanently('${p.id}')" class="text-rose-600 hover:text-rose-800 font-bold bg-rose-50 px-2 py-1 rounded border border-rose-200">Delete Permanently</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function switchReceptionTab(type) {
+      document.getElementById('reception-workflow-old').classList.toggle('hidden', type !== 'old');
+      document.getElementById('reception-workflow-new').classList.toggle('hidden', type !== 'new');
+      document.getElementById('btn-tab-old').className = type === 'old' ? 'px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm' : 'px-4 py-2 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-100';
+      document.getElementById('btn-tab-new').className = type === 'new' ? 'px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm' : 'px-4 py-2 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-600 hover:bg-slate-100';
+    }
+
+    function searchExistingPatient() {
+      const query = document.getElementById('rec-search-query').value.trim();
+      const patient = state.users.find(u => u.role === 'PATIENT' && (u.id === query || u.contact === query));
+
+      if (!patient) {
+        alert("No registered patient found matching that ID or Contact Phone.");
+        document.getElementById('patient-details-card').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('selected-patient-id').value = patient.id;
+      document.getElementById('card-p-name').innerText = `Name: ${patient.name}`;
+      document.getElementById('card-p-id').innerText = `ID: ${patient.id}`;
+      document.getElementById('card-p-contact').innerText = `Contact: ${patient.contact}`;
+      document.getElementById('card-p-age').innerText = `Age: ${patient.age}`;
+      document.getElementById('card-p-address').innerText = `Address: ${patient.address || 'N/A'}`;
+      document.getElementById('patient-details-card').classList.remove('hidden');
+    }
+
+    function renderReceptionPortal() {
+      populateDoctorDropdown();
+      renderReceptionQueries();
+    }
+
+    function populateDoctorDropdown() {
+      const docs = state.users.filter(u => u.role === 'DOCTOR' && u.status === 'Active');
+      document.getElementById('appt-doctor-id').innerHTML = docs.map(d => `<option value="${d.id}">${d.name} (${d.specialization})</option>`).join('');
+      if (docs.length > 0) updateDoctorAvailabilityDisplay(docs[0].id);
+    }
+
+    function updateDoctorAvailabilityDisplay(docId) {
+      const doc = state.users.find(u => u.id === docId);
+      if (doc) {
+        document.getElementById('doc-avail-text').innerText = doc.hours || '09:00 AM - 05:00 PM';
+        document.getElementById('doc-avail-badge').classList.remove('hidden');
+      }
+    }
+
+    function handleBookOldPatientAppt(e) {
+      e.preventDefault();
+      const pid = document.getElementById('selected-patient-id').value;
+      if (!pid) { alert("Please search and select a valid patient first."); return; }
+
+      const docId = document.getElementById('appt-doctor-id').value;
+      const date = document.getElementById('appt-date').value;
+      const time = document.getElementById('appt-time').value;
+
+      const isConflict = state.appointments.some(a => a.doctorId === docId && a.date === date && a.time === time && a.status === 'SCHEDULED');
+      if (isConflict) {
+        alert(`SCHEDULING CONFLICT: Doctor is already booked at ${time} on ${date}. Select another time slot.`);
+        return;
+      }
+
+      const apt = {
+        id: 'APT-' + Math.floor(1000 + Math.random() * 9000),
+        patientId: pid,
+        doctorId: docId,
+        discount: document.getElementById('appt-discount').value,
+        reason: document.getElementById('appt-reason').value,
+        date: date,
+        time: time,
+        status: 'PENDING'
+      };
+
+      state.appointments.push(apt);
+      persistState();
+      alert(`Appointment Scheduled Successfully! Appointment ID: ${apt.id}`);
+      e.target.reset();
+      document.getElementById('patient-details-card').classList.add('hidden');
+    }
+
+    function handleReceptionNewPatientRegister(e) {
+      e.preventDefault();
+      const newPid = 'PAT' + String(state.users.filter(u => u.role === 'PATIENT').length + 1).padStart(3, '0');
+      const tempPass = 'Temp@' + Math.floor(1000 + Math.random() * 9000);
+      const today = new Date().toISOString().split('T')[0];
+
+      const patient = {
+        id: newPid,
+        name: document.getElementById('new-p-name').value,
+        contact: document.getElementById('new-p-contact').value,
+        age: parseInt(document.getElementById('new-p-age').value),
+        address: document.getElementById('new-p-address').value,
+        password: tempPass,
+        firstLogin: true,
+        role: 'PATIENT',
+        regDate: today,
+        discount: 'None',
+        status: 'Active'
+      };
+
+      state.users.push(patient);
+      persistState();
+
+      document.getElementById('display-gen-pid').innerText = newPid;
+      document.getElementById('display-gen-pass').innerText = tempPass;
+      document.getElementById('new-patient-credentials-modal').classList.remove('hidden');
+      e.target.reset();
+    }
+
+    function closeCredentialsModalAndContinue() {
+      document.getElementById('new-patient-credentials-modal').classList.add('hidden');
+      switchReceptionTab('old');
+      const lastPat = state.users[state.users.length - 1];
+      document.getElementById('rec-search-query').value = lastPat.id;
+      searchExistingPatient();
+    }
+
+    function switchQueryTab(type) {
+      document.getElementById('query-list-pending').classList.toggle('hidden', type !== 'pending');
+      document.getElementById('query-list-resolved').classList.toggle('hidden', type !== 'resolved');
+
+      document.getElementById('btn-q-pending').className = type === 'pending' ? 'pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600 mr-4' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 mr-4';
+      document.getElementById('btn-q-resolved').className = type === 'resolved' ? 'pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400';
+    }
+
+    function renderReceptionQueries() {
+      const pending = state.queries.filter(q => q.status === 'PENDING');
+      const resolved = state.queries.filter(q => q.status === 'RESOLVED');
+
+      document.getElementById('query-list-pending').innerHTML = pending.map(q => `
+        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+          <p class="font-bold text-slate-900">${q.patientId}: ${q.text}</p>
+          <button onclick="replyAndResolveQuery('${q.id}')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-[10px] px-2.5 py-1 rounded">Reply & Resolve</button>
+        </div>
+      `).join('') || '<p class="text-slate-400">No pending queries.</p>';
+
+      document.getElementById('query-list-resolved').innerHTML = resolved.map(q => `
+        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+          <p class="font-bold text-slate-900">${q.patientId}: ${q.text}</p>
+          <p class="text-emerald-600 font-bold text-[11px]">Reception Reply: ${q.reply}</p>
+        </div>
+      `).join('') || '<p class="text-slate-400">No resolved queries in history.</p>';
+    }
+
+    function replyAndResolveQuery(qid) {
+      const replyText = prompt("Enter Administrative Reply for Patient:");
+      if (replyText) {
+        const q = state.queries.find(x => x.id === qid);
+        if (q) {
+          q.reply = replyText;
+          q.status = 'RESOLVED';
+          persistState();
+          renderReceptionQueries();
+        }
+      }
+    }
+
+    function switchCashierTab(tab) {
+      document.getElementById('cashier-pane-pending').classList.toggle('hidden', tab !== 'pending');
+      document.getElementById('cashier-pane-history').classList.toggle('hidden', tab !== 'history');
+      document.getElementById('btn-cash-pending').className = tab === 'pending' ? 'pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600 mr-6' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 mr-6';
+      document.getElementById('btn-cash-history').className = tab === 'history' ? 'pb-2 text-xs font-bold border-b-2 border-brand-600 text-brand-600' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400';
+    }
+
+    // Auto-login view initialization
+    if (state.currentUser) {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('active-session-label').innerText = `Logged in as: ${state.currentUser.name} (${state.currentUser.id})`;
+      document.getElementById('active-user-badge').innerText = `Role: ${state.currentUser.role}`;
+      renderPortals();
+    }
+  </script>
+</body>
+</html>
