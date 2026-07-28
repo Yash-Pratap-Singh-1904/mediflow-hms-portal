@@ -52,17 +52,12 @@ The following default accounts are available for testing the deployed applicatio
 - **Register ID:** `REC001`
 - **Password:** `rec123`
 
-## Doctor 1
+## Doctor 
 
 - **Role:** Doctor
 - **Register ID:** `DOC001`
 - **Password:** `doc123`
 
-## Doctor 2
-
-- **Role:** Doctor
-- **Register ID:** `DOC002`
-- **Password:** `doc002`
 
 ## Laboratory Specialist
 
@@ -92,13 +87,7 @@ The following default accounts are available for testing the deployed applicatio
 
 - **Role:** Patient
 - **Register ID:** `PAT002`
-- **Password:** `pat002`
-
-## Patient 3
-
-- **Role:** Patient
-- **Register ID:** `PAT003`
-- **Password:** `pat003`
+- **Password:** `pass123`
 
 > These are demo credentials for the deployed project. Do not use real personal information or real passwords in a public repository.
 
