@@ -349,6 +349,8 @@ The Patient can only access their own personal, medical, appointment, laboratory
 
 The overall workflow of the Hospital Management System is:
 
+```text
+
 Patient
 ↓
 Patient Registration
@@ -406,6 +408,8 @@ Bill Status = PAID
 Patient Views Final Bill
 ↓
 Admin Financial Statistics Updated
+
+```
 
 ---
 
@@ -474,6 +478,8 @@ This ensures consistent data management and prevents unnecessary duplication.
 
 If a Doctor decides that a patient requires a laboratory test:
 
+```text
+
 Doctor
 ↓
 Creates Laboratory Request
@@ -497,6 +503,8 @@ Laboratory Report Created
 Report Uploaded/Submitted
 ↓
 Patient Can View Report
+
+```
 
 The Laboratory Request and Laboratory Report remain associated with the relevant:
 
@@ -616,6 +624,8 @@ Patients can communicate with the Receptionist through the Patient Portal.
 
 The workflow is:
 
+```text
+
 Patient
 ↓
 Submit Query to Receptionist
@@ -627,6 +637,8 @@ Receptionist Reviews Query
 Receptionist Sends Reply
 ↓
 Patient Views Reply
+
+```
 
 Patients can access their previous queries and replies through:
 
@@ -699,6 +711,8 @@ Common properties and behaviors can be shared through parent and child classes.
 
 Example:
 
+```text
+
 User
 ↓
 Staff
@@ -708,6 +722,8 @@ Pharmacist
 Cashier
 Receptionist
 Laboratory Specialist
+
+```
 
 ### Abstraction
 
@@ -775,6 +791,8 @@ The major entities in the system include:
 
 The primary system relationships are:
 
+```text
+
 Patient
 ↓
 Appointment
@@ -800,6 +818,8 @@ Bill
 Bill
 ↓
 Payment
+
+```
 
 This structure allows the hospital to maintain a complete record of a patient's healthcare and billing workflow.
 
@@ -937,6 +957,8 @@ Patient Portal         Admin Dashboard
    ├── Views Payment
    ├── Views Prescription
    └── Views Lab Report
+
+```
 
 ---
 
